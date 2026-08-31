@@ -1,0 +1,181 @@
+---
+title: "Lecture 03 - Exercise solutions"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r setup}
+#| include: false
+options(width = 80)
+```
+
+
+# Exercise 1
+
+Without running the code, what do you expect the output (or error) to be for each of the listed values of `x`?
+
+To make it easier to try each value, the conditional block from the slides is wrapped in a function below - the behavior is identical to assigning `x` and running the block at the top level.
+
+## R
+
+```{r}
+check = function(x) {
+  if (x > 10 || x < -10) {
+    stop("Input too big")
+  } else if (x %in% c(2, 3, 5, 7)) {
+    cat("Input is prime!\n")
+  } else if (x %% 2 == 0) {
+    cat("Input is even!\n")
+  } else if (x %% 2 == 1) {
+    cat("Input is odd!\n")
+  }
+}
+```
+
+```{r}
+check(1)       # 1 %% 2 == 1                          -> odd
+check(3)       # 3 %in% c(2, 3, 5, 7)                 -> prime
+check(-1)      # -1 %% 2 == 1 (%% takes the sign of the divisor) -> odd
+check(-3)      # -3 %% 2 == 1                         -> odd
+```
+
+```{r}
+#| error: true
+check(1:2)     # x > 10 has length 2, || requires length 1 (R >= 4.3) -> error
+```
+
+```{r}
+#| error: true
+check("0")     # "0" > 10 and "0" < -10 are string comparisons ("0" > "10", "0" < "-10"),
+               # both FALSE; "0" %in% c(2, 3, 5, 7) is FALSE (compared as strings);
+               # "0" %% 2 does not coerce character to numeric   -> error
+```
+
+```{r}
+#| error: true
+check("zero")  # "zero" > 10 compares as strings, "zero" > "10" is TRUE
+               # (letters sort after digits) so || short-circuits -> stop()
+```
+
+Note that for `"0"` and `"zero"` the code fails, but at different points and for different reasons - string comparison silently "works" in R (via coercion of the number to a string) while arithmetic does not.
+
+
+## Python
+
+```{python}
+def check(x):
+    if x > 10 or x < -10:
+        raise ValueError("Input too big")
+    elif x in [2, 3, 5, 7]:
+        print("Input is prime!")
+    elif x % 2 == 0:
+        print("Input is even!")
+    elif x % 2 == 1:
+        print("Input is odd!")
+```
+
+```{python}
+check(1)       # 1 % 2 == 1                           -> odd
+check(3)       # 3 in [2, 3, 5, 7]                    -> prime
+check(-1)      # -1 % 2 == 1 (% takes the sign of the divisor) -> odd
+check(-3)      # -3 % 2 == 1                          -> odd
+check(2.5)     # 2.5 % 2 == 0.5, no branch matches    -> no output
+```
+
+```{python}
+#| error: true
+check([1, 2])  # list > int is not supported -> TypeError
+```
+
+```{python}
+#| error: true
+check("0")     # str > int is not supported (no implicit coercion) -> TypeError
+```
+
+Unlike R, Python refuses to compare a string (or list) with a number, so both of the "bad" inputs fail immediately at the first condition with the same error type.
+
+
+# Exercise 2
+
+Using *nested* loops, write code in both R and Python that prints only the values of `x` that are *not* prime - without using subsetting, `%in%`, or `in`.
+
+```{r}
+primes = c( 2,  3,  5,  7, 11, 13, 17, 19, 23, 
+           29, 31, 37, 41, 43, 47, 53, 59, 61, 
+           67, 71, 73, 79, 83, 89, 97)
+x = c(3, 4, 12, 19, 23, 51, 61, 63, 78)
+```
+
+```{python}
+primes = [ 2,  3,  5,  7, 11, 13, 17, 19, 23, 
+          29, 31, 37, 41, 43, 47, 53, 59, 61, 
+          67, 71, 73, 79, 83, 89, 97]
+x = [3, 4, 12, 19, 23, 51, 61, 63, 78]
+```
+
+## R
+
+R has no loop `else`, so we need a flag variable that is set if a match is found in the inner loop. The `break` is not strictly necessary but avoids checking the remaining primes once a match is found.
+
+```{r}
+for (v in x) {
+  is_prime = FALSE
+  
+  for (p in primes) {
+    if (v == p) {
+      is_prime = TRUE
+      break
+    }
+  }
+  
+  if (!is_prime)
+    print(v)
+}
+```
+
+## Python
+
+The same flag-based approach works in Python,
+
+```{python}
+for v in x:
+    is_prime = False
+
+    for p in primes:
+        if v == p:
+            is_prime = True
+            break
+
+    if not is_prime:
+        print(v)
+```
+
+but the loop `else` clause removes the need for the flag - the `else` body runs only when the inner loop finishes without hitting `break`, i.e. when no prime matched.
+
+```{python}
+for v in x:
+    for p in primes:
+        if v == p:
+            break
+    else:
+        print(v)
+```
+
+## Without loops
+
+For comparison, the idiomatic (non-loop) solutions in each language, using the operators the exercise asked you to avoid:
+
+```{r}
+x[!x %in% primes]
+```
+
+```{python}
+[v for v in x if v not in primes]
+```
