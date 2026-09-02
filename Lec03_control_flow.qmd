@@ -122,11 +122,9 @@ x = [3, 4, 12, 19, 23, 51, 61, 63, 78]
 
 ## R
 
-R has no loop `else`, so we need a flag variable that is set if a match is found in the inner loop. The `break` is not strictly necessary but avoids checking the remaining primes once a match is found.
-
 ```{r}
 for (v in x) {
-  is_prime = FALSE
+  is_prime = FALSE # Flag variable
   
   for (p in primes) {
     if (v == p) {
@@ -142,7 +140,7 @@ for (v in x) {
 
 ## Python
 
-The same flag-based approach works in Python,
+Line-by-line translation:
 
 ```{python}
 for v in x:
@@ -157,20 +155,18 @@ for v in x:
         print(v)
 ```
 
-but the loop `else` clause removes the need for the flag - the `else` body runs only when the inner loop finishes without hitting `break`, i.e. when no prime matched.
+Better idiomatic python:
 
 ```{python}
 for v in x:
     for p in primes:
         if v == p:
             break
-    else:
+    else: # triggers if we don't hit break
         print(v)
 ```
 
 ## Without loops
-
-For comparison, the idiomatic (non-loop) solutions in each language, using the operators the exercise asked you to avoid:
 
 ```{r}
 x[!x %in% primes]
