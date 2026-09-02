@@ -123,7 +123,19 @@ x = [3, 4, 12, 19, 23, 51, 61, 63, 78]
 ## R
 
 ```{r}
-
+for (v in x) {
+  is_prime = FALSE # Flag variable
+  
+  for (p in primes) {
+    if (v == p) {
+      is_prime = TRUE
+      break
+    }
+  }
+  
+  if (!is_prime)
+    print(v)
+}
 ```
 
 ## Python
@@ -131,19 +143,35 @@ x = [3, 4, 12, 19, 23, 51, 61, 63, 78]
 Line-by-line translation:
 
 ```{python}
+for v in x:
+    is_prime = False
 
+    for p in primes:
+        if v == p:
+            is_prime = True
+            break
+
+    if not is_prime:
+        print(v)
 ```
 
 Better idiomatic python:
 
-
+```{python}
+for v in x:
+    for p in primes:
+        if v == p:
+            break
+    else: # triggers if we don't hit break
+        print(v)
+```
 
 ## Without loops
 
 ```{r}
-
+x[!x %in% primes]
 ```
 
 ```{python}
-
+[v for v in x if v not in primes]
 ```

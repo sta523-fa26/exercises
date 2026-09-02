@@ -1,0 +1,60 @@
+---
+title: "Lecture 04 - Exercise solutions"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r setup}
+#| include: false
+options(width = 80)
+```
+
+<!-- 
+Make sure you have numpy installed
+! uv sync # or
+! uv add numpy
+-->
+
+```{python py_setup}
+#| echo: false
+import numpy as np
+```
+
+
+# Exercise 1
+
+Without running the code, determine the result (or error) of each expression.
+
+## R
+
+```{r}
+x = c(a = 2, b = 4, c = 6, d = 8)
+
+x[c(1, 3)]          # 
+x[-c(1, 3)]         # 
+x[c(TRUE, FALSE)]   # 
+x[c("d", "b", "z")] # 
+x[x > 3 & x < 8]    # 
+```
+
+## Python / NumPy
+
+```{python}
+#| eval: false
+x = np.array([2, 4, 6, 8])
+
+x[[0, 2]]                    # 
+x[-2:]                       # 
+x[np.array([True, False])]   # 
+x[x > 3 & x < 8]             # 
+x[(x > 3) & (x < 8)]         # 
+```
+
+# Exercise 2
