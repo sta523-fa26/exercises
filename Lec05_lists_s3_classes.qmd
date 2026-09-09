@@ -1,0 +1,66 @@
+---
+title: "Lecture 05 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+## Exercise 1
+
+```{r}
+json = '
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25,
+  "address":
+  {
+    "streetAddress": "21 2nd Street",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": 10021
+  },
+  "phoneNumber":
+  [ {
+      "type": "home",
+      "number": "212 555-1239"
+    },
+    {
+      "type": "fax",
+      "number": "646 555-4567"
+  } ]
+}
+'
+
+j2 = jsonlite::fromJSON(json, simplifyVector = FALSE) 
+
+```
+
+```{r}
+list(
+  "firstName" = "John",
+  "lastName" = "Smith",
+  "age" = 25,
+  "address" =
+  list(
+    "streetAddress" = "21 2nd Street",
+    "city" = "New York",
+    "state" = "NY",
+    "postalCode" = 10021
+  ),
+  "phoneNumber" =
+  list( list(
+      "type" = "home",
+      "number" = "212 555-1239"
+    ),
+    list(
+      "type" = "fax",
+      "number" = "646 555-4567"
+  ) )
+) |>
+  str()
+```
