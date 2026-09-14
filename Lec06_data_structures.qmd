@@ -1,0 +1,78 @@
+---
+title: "Lecture 06 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+## Exercise 1
+
+```{python}
+person = {
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25,
+  "address": {
+    "streetAddress": "21 2nd Street",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": 10021
+  },
+  "phoneNumber": [
+    { "type": "home",
+      "number": "212 555-1239" },
+    { "type": "fax",
+      "number": "646 555-4567" }
+  ]
+}
+```
+
+```{python}
+person["phoneNumber"][1]["type"]
+person["phoneNumber"][1]["number"]
+```
+
+```{python}
+del person["age"]
+person["phoneNumber"].append({"type": "mobile", "number": "555-555-5555"})
+```
+
+
+
+
+```{python}
+person["phoneNumber"][1]["number"]
+```
+
+```{python}
+person["phoneNumber"].append({"type": "mobile", "number": "917 555-0000"})
+del person["age"]
+person
+```
+
+```{python}
+def phone(person, phone_type):
+    for entry in person["phoneNumber"]:
+        if entry["type"] == phone_type:
+            return entry["number"]
+    return None
+
+phone(person, "fax")
+print(phone(person, "work"))
+```
+
+
+# Exercise 2
+
+|-----------------------------------------------|-----------------------------------------------|-----------------------------------------------------|
+| 100 integers, repeated elementwise arithmetic | NumPy array                                   | integer vector                                      |
+| Queue of customer records                     | `collections.deque` (`append()`, `popleft()`) | `list`, tracking the index of the head              |
+| Stack of customer records                     | `list` (`append()`, `pop()`)                  | `list` (`x[[length(x) + 1]] = r`, `x[-length(x)]`)  |
+| Word counts                                   | `dict` or `collections.Counter`               | `table()`, or an environment for incremental counts |
+| Histogram bar heights                         | `list` or NumPy array                         | numeric vector                                      |
+| Million words vs 50 stop words                | `set` with `in`                               | `%in%`                                              |
+| Last 10 lines of a large file                 | `deque(maxlen=10)`                            | length 10 character vector, `x = c(x[-1], line)`    |
