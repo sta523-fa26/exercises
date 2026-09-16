@@ -1,0 +1,56 @@
+---
+title: "Lecture 07 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r}
+library(dplyr)
+```
+
+
+## Exercise 1
+
+```{r}
+penguins = palmerpenguins::penguins |> as.data.frame()
+```
+
+### Select the rows for Gentoo penguins with a body mass above 5000 g, keeping only the species, island, and body_mass_g columns.
+
+```{r}
+penguins[
+  penguins$species == "Gentoo" & penguins$body_mass_g > 5000,
+  c("species", "island", "body_mass_g")
+] |>
+  str()
+```
+
+### Add a column body_mass_kg containing the body mass in kilograms.
+
+```{r}
+penguins$body_mass_kg = penguins$body_mass_g / 1000
+penguins |> head() 
+```
+
+### Calculate the mean bill length (in mm) of the Adelie penguins, ignoring missing values.
+
+```{r}
+penguins$bill_length_mm[penguins$species == "Adelie"] |>
+  mean(na.rm = TRUE)
+```
+
+```{r}
+penguins |>
+  filter(species == "Adelie") |>
+  summarize(
+    species = unique(species), 
+    mean = mean(bill_length_mm, na.rm=TRUE)
+  )
+```
+
+## Examples
