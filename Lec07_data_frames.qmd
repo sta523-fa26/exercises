@@ -30,12 +30,26 @@ penguins[
   str()
 ```
 
+```{r}
+penguins |>
+  filter(species == "Gentoo", body_mass_g > 5000) |>
+  select(species, island, body_mass_g)
+```
+
 ### Add a column body_mass_kg containing the body mass in kilograms.
 
 ```{r}
 penguins$body_mass_kg = penguins$body_mass_g / 1000
 penguins |> head() 
 ```
+
+```{r}
+penguins |>
+  mutate(
+    body_mass_kg = body_mass_g
+  )
+```
+
 
 ### Calculate the mean bill length (in mm) of the Adelie penguins, ignoring missing values.
 
