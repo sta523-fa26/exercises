@@ -10,6 +10,7 @@ engine: knitr
 ---
 
 ```{python}
+#| include: false
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -25,6 +26,15 @@ flights = pd.read_parquet("data/flights.parquet")
 1. How many flights to Los Angeles (LAX) did each of the legacy carriers (AA, UA, DL or US) have in May from JFK, and what was their average duration?
 
    ```{python}
+   (flights
+      .query("dest == 'LAX' and origin == 'JFK' and month == 5")
+      .query("carrier in ['AA','UA','DL','US']")
+      .groupby("carrier", as_index = False)
+      .agg(
+         n = ("flight", "size"),
+         avg_air_time = ("air_time", np.mean)
+      )
+   )
    ```
 
 2. Which plane (check the tail numbers) flew out of each New York airport the most?

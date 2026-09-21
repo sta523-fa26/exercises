@@ -70,27 +70,64 @@ penguins |>
 ## Examples
 
 ```{r}
+library(dplyr)
 library(nycflights13)
 ```
 
 1. How many flights to Los Angeles (LAX) did each of the legacy carriers (AA, UA, DL or US) have in May from JFK, and what was their average duration?
 
    ```{r}
+   flights |>
+    filter(dest == "LAX", carrier %in% c("AA","UA","DL","US")) |>
+    filter(month == 5 & origin == "JFK") |>
+    group_by(carrier) |>
+    summarize(
+      n = n(),
+      avg_duration = mean(air_time, na.rm=TRUE)
+    )
    ```
 
 2. Which plane (check the tail numbers) flew out of each New York airport the most?
 
    ```{r}
+   flights |>
+    filter(!is.na(tailnum)) |>
+    count(origin, tailnum) |>
+    group_by(origin) |>
+    slice_max(n, n=1)
+    #slice_max(n, n=1, by=origin)
    ```
 
 
 3. Which 5 days should you consider flying on if you want to have the lowest possible average departure delay?
 
    ```{r}
+   flights |>
+    summarize(
+      avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+      .by = c(month, day)
+    ) |>
+      slice_min(avg_dep_delay, n=5)
    ```
 
+   ```{r}
+   flights |>
+    group_by(month, day) |>
+    summarize(
+      avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+      #ungroup() |>
+      slice_min(avg_dep_delay, n=5)
+   ```
 
 4. Which flight has the largest arrival delay as a percentage of its scheduled air time?
 
    ```{r}
+   flights |>
+    mutate(
+      arr_delay_pct = 100 * arr_delay / air_time 
+    ) |>
+      slice_max(arr_delay_pct, n=1) |>
+      select(year:day, carrier, flight, origin, dest, arr_delay, air_time, arr_delay_pct)
    ```
