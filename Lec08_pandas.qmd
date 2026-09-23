@@ -1,5 +1,5 @@
 ---
-title: "Lecture 07 - Exercise solutions"
+title: "Lecture 08 - Exercise solutions"
 format:
   html:
     embed-resources: true
@@ -13,7 +13,6 @@ engine: knitr
 #| include: false
 import numpy as np
 import pandas as pd
-import polars as pl
 ```
 
 
@@ -54,33 +53,4 @@ flights.info()
 
    ```{python}
    ```
-
-## Exercise 1
-
-```{python}
-flights = pl.read_parquet("data/flights.parquet")
-```
-
-1. How many flights to Los Angeles (LAX) did each of the legacy carriers (AA, UA, DL or US) have in May from JFK, and what was their average duration?
-
-   ```{python}
-   ```
-
-2. Which plane (check the tail numbers) flew out of each New York airport the most?
-
-   ```{python}
-   ```
-
-
-3. Which 5 days should you consider flying on if you want to have the lowest possible average departure delay?
-
-   ```{python}
-   ```
-
-
-4. Which flight has the largest arrival delay as a percentage of its scheduled air time?
-
-   ```{python}
-   ```
-
 
