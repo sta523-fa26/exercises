@@ -30,23 +30,158 @@ flights = pl.read_parquet("data/flights.parquet")
 1. How many flights to Los Angeles (LAX) did each of the legacy carriers (AA, UA, DL or US) have in May from JFK, and what was their average duration?
 
    ```{python}
+   flights.filter(
+      pl.col("dest") == "LAX",
+      pl.col("origin") == "JFK",
+      pl.col("month") == 5,
+      pl.col("carrier").is_in(["AA","UA","US","DL"])
+   ).group_by(
+      "carrier"
+   ).agg(
+      n = pl.len(),
+      avg_air_time = pl.col("air_time").mean()
+   )
    ```
 
 2. Which plane (check the tail numbers) flew out of each New York airport the most?
 
    ```{python}
+   flights.drop_nulls(
+      "tailnum"
+   ).group_by(
+      "origin", "tailnum"
+   ).len(
+   ).filter(
+      pl.col("len") == pl.col("len").max().over("origin")
+   ).sort(
+      "origin"
+   )
    ```
 
 
-3. Which 5 days should you consider flying on if you want to have the lowest possible average departure delay?
+3. Which five calendar dates had the lowest mean departure delay (ties broken by earliest date)?
 
    ```{python}
+   (flights
+     .group_by("year", "month", "day")
+     .agg(avg_dep_delay = pl.col("dep_delay").mean())
+     .drop_nulls("avg_dep_delay")
+     .sort("avg_dep_delay", "year", "month", "day")
+     .head(5)
+   )
    ```
 
-
-4. Which flight has the largest arrival delay as a percentage of its scheduled air time?
+4. Which flight has the largest arrival delay as a percentage of its actual air time (no missing values or nonpositive air times, all ties)?
 
    ```{python}
+   (flights
+     .filter(
+      pl.col("arr_delay").is_not_null(), pl.col("air_time") > 0
+    )
+     .with_columns(
+      arr_delay_pct = 100 * pl.col("arr_delay") / pl.col("air_time")
+    )
+     .filter(
+      pl.col("arr_delay_pct") == pl.col("arr_delay_pct").max()
+    )
+     .select(
+      "month", "day", "carrier", "flight", "origin", "dest", "arr_delay", "air_time", "arr_delay_pct"
+    )
+   )
    ```
 
 
+# Exercise 2
+
+Using tidyr and then polars, construct a contingency table of penguin counts with islands as rows and species as columns, with zeros for the missing pairs.
+
+```{r}
+palmerpenguins::penguins |>
+  count(island, species) |>
+  pivot_wider(
+    names_from = species,
+    values_from = n,
+    values_fill = 0
+  )
+```
+
+```{python}
+(pl.read_csv("../data/penguins.csv", null_values="NA")
+  .group_by("island", "species")
+  .len()
+  .pivot(on="species", index="island", values="len")
+  .fill_null(0)
+  .sort("island")
+)
+```
+
+
+# Exercise 3
+
+Using dplyr and then polars, with `flights.parquet` and `planes.parquet`:
+
+```{r}
+flights = nanoparquet::read_parquet("../data/flights.parquet")
+planes = nanoparquet::read_parquet("../data/planes.parquet")
+```
+
+```{python}
+planes = pl.read_parquet("../data/planes.parquet")
+```
+
+1. How many flights have a tail number with no matching record in `planes`? Which carrier accounts for the most of them?
+
+   ```{r}
+   unmatched = flights |>
+     filter(!is.na(tailnum)) |>
+     anti_join(planes, by = "tailnum")
+
+   nrow(unmatched)
+   count(unmatched, carrier, sort = TRUE)
+   ```
+
+   ```{python}
+   unmatched = (flights
+     .drop_nulls("tailnum")
+     .join(planes, on="tailnum", how="anti")
+   )
+
+   unmatched.height
+   unmatched.group_by("carrier").len().sort("len", descending=True)
+   ```
+
+2. Which five manufacturers' planes flew the most flights out of New York?
+
+   ```{r}
+   flights |>
+     inner_join(planes, by = "tailnum") |>
+     count(manufacturer, sort = TRUE) |>
+     head(5)
+   ```
+
+   ```{python}
+   (flights
+     .join(planes, on="tailnum")
+     .group_by("manufacturer")
+     .len()
+     .sort("len", descending=True)
+     .head(5)
+   )
+   ```
+
+3. Both tables have a `year` column. What happens to these columns in a join, and do they mean the same thing?
+
+   ```{r}
+   flights |>
+     left_join(planes, by = "tailnum") |>
+     select(tailnum, starts_with("year"))
+   ```
+
+   ```{python}
+   (flights
+     .join(planes, on="tailnum", how="left")
+     .select("tailnum", pl.selectors.starts_with("year"))
+   )
+   ```
+
+   Non-key columns with the same name get a suffix (`year.x` / `year.y`, `year` / `year_right`). `flights$year` is the year of the flight, `planes$year` is the year of manufacture, so they should not be used as a key.
