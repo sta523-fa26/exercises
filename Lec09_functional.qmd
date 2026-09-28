@@ -1,0 +1,37 @@
+---
+title: "Lecture 10 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r}
+#| include: false
+library(tidyverse)
+```
+
+```{python}
+#| include: false
+import numpy as np
+import pandas as pd
+import polars as pl
+```
+
+```{r}
+repos = jsonlite::read_json(
+  "data/tidyverse_repos.json"
+)
+```
+
+```{r}
+import json
+with open("data/tidyverse_repos.json") as f:
+    repos = json.load(f)
+```
+
+## Exercise 1
+
