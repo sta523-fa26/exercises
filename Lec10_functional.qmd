@@ -27,43 +27,86 @@ repos = jsonlite::read_json(
 )
 ```
 
-```{r}
+```{python}
 import json
 with open("data/tidyverse_repos.json") as f:
     repos = json.load(f)
 ```
 
-## Exercise 1
+# Exercise 1
+
+Using purrr in R and comprehensions in Python, build a data frame of each repository's name and primary language, find the five most starred repositories, and the repositories with `"r"` among their topics.
+
+```{r}
+repos = jsonlite::read_json("../data/tidyverse_repos.json")
+```
+
+```{python}
+with open("../data/tidyverse_repos.json") as f:
+    repos = json.load(f)
+```
 
 1. A data frame with each repository's `name` and primary `language`.
 
    ```{r}
+   tibble(
+     name = map_chr(repos, "name"),
+     language = map_chr(repos, "language", .default = NA)
+   )
    ```
 
    ```{python}
+   pl.DataFrame({
+     "name": [r["name"] for r in repos],
+     "language": [r["language"] for r in repos]
+   })
    ```
 
 2. The five repositories with the most stars.
 
    ```{r}
-
+   map_int(repos, "stargazers_count") |>
+     set_names(map_chr(repos, "name")) |>
+     sort(decreasing = TRUE) |>
+     head(5)
    ```
 
    ```{python}
+   top = sorted(repos, key=lambda r: r["stargazers_count"], reverse=True)[:5]
+   {r["name"]: r["stargazers_count"] for r in top}
    ```
 
 3. Repositories with `"r"` among their topics.
 
    ```{r}
+   keep(repos, \(x) "r" %in% x$topics) |> map_chr("name")
    ```
 
    ```{python}
+   [r["name"] for r in repos if "r" in r["topics"]]
    ```
 
-## Exercise 2
+
+# Exercise 2
+
+Using tidyr / purrr in R and polars in Python, tidy `repos` into one row per repository with `name`, `description`, `language`, `stargazers_count`, `forks_count`, the license name, and the number of topics.
 
 ```{r}
+tibble(repo = repos) |>
+  hoist(
+    repo, "name", "description", "language",
+    "stargazers_count", "forks_count",
+    license = c("license", "name")
+  ) |>
+  mutate(n_topics = map_int(repo, \(x) length(x$topics))) |>
+  select(-repo)
 ```
 
 ```{python}
+pl.DataFrame(repos).select(
+  "name", "description", "language",
+  "stargazers_count", "forks_count",
+  license = pl.col("license").struct.field("name"),
+  n_topics = pl.col("topics").list.len()
+)
 ```
