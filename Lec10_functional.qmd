@@ -35,3 +35,35 @@ with open("data/tidyverse_repos.json") as f:
 
 ## Exercise 1
 
+1. A data frame with each repository's `name` and primary `language`.
+
+   ```{r}
+   ```
+
+   ```{python}
+   ```
+
+2. The five repositories with the most stars.
+
+   ```{r}
+
+   ```
+
+   ```{python}
+   ```
+
+3. Repositories with `"r"` among their topics.
+
+   ```{r}
+   ```
+
+   ```{python}
+   ```
+
+## Exercise 2
+
+```{r}
+```
+
+```{python}
+```
