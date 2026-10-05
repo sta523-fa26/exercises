@@ -1,0 +1,106 @@
+---
+title: "Lecture 12 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+```{r setup}
+#| include: false
+library(stringr)
+```
+
+```{python py_setup}
+#| include: false
+import re
+```
+
+
+# Exercise 1
+
+For the vector of randomly generated names, write a regular expression that detects if the first name, the last name, either, or neither start with a vowel.
+
+```{r}
+x = c("Jeremy Cruz", "Nathaniel Le", "Jasmine Chu", "Bradley Calderon Raygoza",
+      "Quinten Weller", "Katelien Kanamu-Hauanio", "Zuhriyaa al-Amen",
+      "Travale York", "Alexis Ahmed", "David Alcocer", "Jairo Martinez",
+      "Dwone Gallegos", "Amanda Sherwood", "Hadiyya el-Eid", "Shaimaaa al-Can",
+      "Sarah Love", "Shelby Villano", "Sundus al-Hashmi", "Dyani Loving",
+      "Shanelle Douglas")
+```
+
+```{python}
+x = r.x
+```
+
+1. First name starts with a vowel.
+
+   ```{r}
+   str_subset(x, "^[AEIOU]")
+   ```
+
+2. Last name starts with a vowel.
+
+   ```{r}
+   str_subset(x, " [AEIOUaeiou]")
+   ```
+
+
+3. Either the first or last name starts with a vowel.
+
+   ```{r}
+   str_subset(x, "^[AEIOU]| [AEIOUaeiou]")
+   ```
+
+
+4. Neither the first nor last name starts with a vowel.
+
+   ```{r}
+   x[ !str_detect(x, "^[AEIOU]") & 
+      !str_detect(x, " [AEIOUaeiou]") ]
+
+
+   setdiff(x, str_subset(x, "^[AEIOU]| [AEIOUaeiou]"))
+
+   str_subset(x, "^[AEIOU]| [AEIOUaeiou]", negate = TRUE)
+   ```
+
+
+# Exercise 2
+
+Write a regular expression that extracts all of the phone numbers in `text`, then use groups to extract the area code separately from the rest of the number.
+
+```{r}
+text = c(
+  "apple",
+  "219 733 8965",
+  "329-293-8753",
+  "Work: (579) 499-7527; Home: (543) 355 3679"
+)
+```
+
+```{python}
+text = r.text
+```
+
+1. Extract all phone numbers.
+
+   ```{r}
+   str_extract_all(
+      text,
+      "\\(?\\d{3}\\)?[ -]\\d{3}[ -]\\d{4}"
+   )
+   ```
+
+   
+2. Area code separately from the rest of the number.
+
+   ```{r}
+   str_match_all(
+      text,
+      "\\(?(\\d{3})\\)?[ -]((\\d{3})[ -](\\d{4}))"
+   )
+   ```
