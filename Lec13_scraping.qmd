@@ -1,0 +1,122 @@
+---
+title: "Lecture 13 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+```{r setup}
+#| include: false
+library(stringr)
+```
+
+
+```{python py_setup}
+#| include: false
+from urllib.parse import urljoin
+from urllib.robotparser import RobotFileParser
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+pd.set_option("display.width", 120)
+```
+
+
+# Example - Rotten Tomatoes
+
+## BeautifulSoup - Class
+
+```{python}
+base = "https://www.rottentomatoes.com"
+url = base + "/browse/movies_at_home/sort:popular"
+headers = {"User-Agent": "sta523-example"}
+
+rp = RobotFileParser(base + "/robots.txt")
+rp.read()
+rp.can_fetch(headers["User-Agent"], url)
+```
+
+```{python}
+response = requests.get(url, headers=headers, timeout=10)
+response.raise_for_status()
+
+page = BeautifulSoup(response.text, "html.parser")
+```
+
+```{python}
+
+
+pd.DataFrame({
+  "title": page.select("score-pairs-deprecated+ rt-text"),
+  "score": page.select("media-info-tile score-pairs-deprecated > rt-text:nth-child(2)")
+}).assign(
+  title = pd.col("title").map(lambda t: t.get_text("", strip=True)),
+  score = pd.col("score").map(lambda s: s.get_text("", strip=True).rstrip("%") or None).astype("Int64")
+)
+```
+
+## Beautiful Soup - Full Solution'
+
+```{python}
+d.DataFrame({
+    "title": page.select("rt-text[data-qa='discovery-media-list-item-title']"),
+    "score": page.select("rt-text[slot='criticsScore']"),
+    "icon":  page.select("div.flex-container score-icon-critics"),
+    "url":   page.select("a.js-tile-link"),
+}).assign(
+    title = pd.col("title").map(lambda t: t.get_text(" ", strip=True)),
+    score = pd.col("score").map(lambda s: s.get_text(strip=True).rstrip("%") or None).astype("Int64"),
+    sentiment = pd.col("icon").map(lambda i: i.get("sentiment")),
+    certified = pd.col("icon").map(lambda i: i.get("certified") == "true"),
+    label = pd.col("sentiment").map(
+      {"positive": "Fresh", "negative": "Rotten"} # Sentiment -> Label
+    ).where(
+      ~pd.col("certified"), "Certified Fresh" # Replace not falsy certified values w/ CF 
+    ),
+    url = pd.col("url").map(lambda a: urljoin(response.url, a["href"]))
+).drop(columns=["icon", "sentiment", "certified"])
+```
+
+## rvest
+
+```{r}
+#| message: false
+library(tidyverse)
+library(rvest)
+```
+
+```{r}
+base = "https://www.rottentomatoes.com"
+url = paste0(base, "/browse/movies_at_home/sort:popular")
+
+session = polite::bow(url, user_agent = "sta523-example")
+session
+```
+
+```{r}
+page = polite::scrape(session)
+
+# Icons can't be a column since a node-set is not an R vector
+icons = page |> html_elements("div.flex-container score-icon-critics")
+
+tibble(
+  title = page |> html_elements("rt-text[data-qa='discovery-media-list-item-title']") |> 
+    html_text2(),
+  score = page |> html_elements("rt-text[slot='criticsScore']") |> 
+    html_text2() |> 
+    stringr::str_remove("%") |> 
+    as.integer(),
+  label = case_when(
+    html_attr(icons, "certified") == "true" ~ "Certified Fresh",
+    html_attr(icons, "sentiment") == "positive" ~ "Fresh",
+    html_attr(icons, "sentiment") == "negative" ~ "Rotten"
+  ),
+  url = page |> html_elements("a.js-tile-link") |> html_attr("href")
+) |>
+  mutate(url = paste0(base, url))
+```
