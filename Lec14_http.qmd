@@ -1,0 +1,102 @@
+---
+title: "Lecture 14 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r setup}
+#| include: false
+library(tidyverse)
+library(httr2)
+```
+
+```{python py_setup}
+#| include: false
+import requests
+import pandas as pd
+```
+
+```{r}
+# Comment this out if you have not stored a GitHub token with gitcreds::gitcreds_set(),
+# and remove the authentication line from the solution(s) below
+token = gitcreds::gitcreds_get()$password
+```
+
+```{python}
+token = r.token
+```
+
+
+# Exercise 1
+
+See <https://docs.github.com/en/rest/repos/repos#list-organization-repositories> for endpoint documentation.
+
+### R
+
+```{r}
+resps = request("https://api.github.com/orgs/posit-dev/repos") |>
+  req_url_query(per_page = 100, type = "public") |>
+  req_auth_bearer_token(token) |>
+  req_timeout(10) |>
+  req_perform_iterative(
+    next_req = iterate_with_link_url(),
+    max_reqs = Inf, progress = FALSE
+  )
+
+repos = resps |> resps_data(\(resp) resp_body_json(resp))
+
+df = tibble::tibble(
+  name = purrr::map_chr(repos, "name"),
+  language = purrr::map_chr(repos, "language", .default = NA_character_),
+  stars = purrr::map_int(repos, "stargazers_count"),
+  pushed_at = purrr::map_chr(repos, "pushed_at", .default = NA_character_) |>
+    lubridate::ymd_hms(tz = "UTC")
+)
+
+c(repos = nrow(df), pages = length(resps))
+df |> dplyr::count(language, sort = TRUE)
+df |> dplyr::slice_max(pushed_at, n = 5, with_ties = FALSE, na_rm = TRUE)
+```
+
+`max_reqs = Inf` avoids truncating the collection at httr2's default of 20 pages. `with_ties = FALSE` returns at most five repositories, matching the Python result. Live counts and ordering can change between runs.
+
+
+### Python
+
+
+
+```{python}
+token = r.token
+
+url = "https://api.github.com/orgs/posit-dev/repos"
+params = {"per_page": 100, "type": "public"}
+headers = {"Authorization": f"Bearer {token}"}
+repos = []
+pages = 0
+
+while url is not None:
+    resp = requests.get(url, params=params, headers=headers, timeout=10)
+    resp.raise_for_status()
+    repos.extend(resp.json())
+    pages += 1
+    url = resp.links.get("next", {}).get("url")
+    params = None
+
+df = pd.DataFrame({
+    "name": [repo["name"] for repo in repos],
+    "language": [repo["language"] for repo in repos],
+    "stars": [repo["stargazers_count"] for repo in repos],
+    "pushed_at": pd.to_datetime([repo["pushed_at"] for repo in repos], utc=True),
+})
+
+len(df), pages
+df["language"].value_counts(dropna=False)
+df.dropna(subset=["pushed_at"]).nlargest(5, "pushed_at")
+```
+
+`dropna=False` counts missing languages. Dates are parsed in UTC, and rows without a push date are excluded from the most-recent list.
