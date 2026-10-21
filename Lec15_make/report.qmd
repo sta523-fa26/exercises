@@ -1,0 +1,28 @@
+---
+title: "NFL scoring, 2000 to 2019"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| include: false
+games = readr::read_csv("data/clean.csv", show_col_types = FALSE)
+```
+
+This report uses `r nrow(games)` regular season and playoff games from the 2000 through 2019 NFL seasons.
+
+![](figs/scores.png)
+
+## Games per season
+
+![](figs/counts.png)
+
+## Highest scoring games
+
+```{r}
+#| echo: false
+games |>
+  dplyr::slice_max(total, n = 5) |>
+  knitr::kable()
+```

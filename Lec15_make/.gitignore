@@ -1,0 +1,7 @@
+data/
+figs/
+report.html
+report_files/
+.venv/
+.quarto/
+__pycache__/

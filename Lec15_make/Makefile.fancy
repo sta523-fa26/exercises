@@ -1,0 +1,30 @@
+PY := uv run python
+R := Rscript
+FIGS := figs/scores.png figs/counts.png
+
+all: report.html
+
+.venv/.synced: pyproject.toml
+	uv sync
+	touch "$@"
+
+data/raw.csv: get_data.py
+	mkdir -p "$(@D)"
+	$(PY) "$<"
+
+data/clean.csv: clean_data.R data/raw.csv
+	mkdir -p "$(@D)"
+	$(R) "$<"
+
+figs/%.png: plot_%.py data/clean.csv .venv/.synced
+	mkdir -p "$(@D)"
+	$(PY) "$<"
+
+report.html: report.qmd data/clean.csv $(FIGS)
+	quarto render "$<"
+
+clean:
+	rm -f data/raw.csv data/clean.csv $(FIGS) report.html
+
+.PHONY: all clean
+.DELETE_ON_ERROR:
