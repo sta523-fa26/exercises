@@ -18,7 +18,7 @@ planes_tbl = copy_to(con, nycflights13::planes, "planes", temporary = FALSE)
 ```
 
 
-cise 1
+# Exercise 1
 
 Using `flights_tbl` and `planes_tbl`, find the most common destination from each origin, the five manufacturers with the most flights along with their mean departure delay, and the manufacturers with at least 30,000 flights. Inspect the SQL for each with `show_query()`.
 
