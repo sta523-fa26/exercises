@@ -1,0 +1,37 @@
+---
+title: "Lecture 16 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r setup}
+#| include: false
+library(dplyr)
+con = DBI::dbConnect(duckdb::duckdb())
+flights_tbl = copy_to(con, nycflights13::flights, "flights", temporary = FALSE)
+planes_tbl = copy_to(con, nycflights13::planes, "planes", temporary = FALSE)
+```
+
+
+# Exercise 1
+
+Find the most common destination from each origin, 
+
+```{r}
+```
+
+
+Find the five manufacturers with the most flights along with their mean departure delay
+
+```{r}
+```
+
+Find the manufacturers with at least 30,000 flights. 
+
+```{r}
+```
