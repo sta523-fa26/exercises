@@ -1,0 +1,52 @@
+---
+title: "Lecture 17 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+knitr:
+  opts_chunk:
+    prompt: true
+---
+
+```{r setup}
+#| include: false
+library(duckknit)
+```
+
+```{duckdb}
+#| include: false
+#| db: data/flights.duckdb
+#| session: flights
+.timer on
+```
+
+
+# Exercise 1
+
+What is the total number of seats available on all of the planes that flew out of New York in 2013?
+
+```{duckdb}
+#| session: flights
+
+```
+
+
+# Exercise 2
+
+1. For each month, which carrier had the worst mean arrival delay? Use a window function and `QUALIFY`.
+
+```{duckdb}
+#| session: flights
+
+```
+
+2. What fraction of each carrier's flights departed more than 30 minutes late, and how does that compare to the fraction over all flights? Use a CTE.
+
+```{duckdb}
+#| session: flights
+
+```
