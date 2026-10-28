@@ -22,6 +22,8 @@ library(duckknit)
 #| db: data/flights.duckdb
 #| session: flights
 .timer on
+.maxwidth 90
+.maxrows 12
 ```
 
 
@@ -31,7 +33,7 @@ What is the total number of seats available on all of the planes that flew out o
 
 ```{duckdb}
 #| session: flights
-
+FROM flights;
 ```
 
 
