@@ -33,7 +33,9 @@ What is the total number of seats available on all of the planes that flew out o
 
 ```{duckdb}
 #| session: flights
-FROM flights;
+SELECT sum(seats) 
+FROM flights 
+LEFT JOIN planes USING (tailnum);
 ```
 
 
@@ -41,14 +43,31 @@ FROM flights;
 
 1. For each month, which carrier had the worst mean arrival delay? Use a window function and `QUALIFY`.
 
-```{duckdb}
-#| session: flights
-
-```
+   ```{duckdb}
+   #| session: flights
+   WITH monthly AS (
+     SELECT month, carrier, avg (arr_delay) AS delay
+     FROM flights
+     GROUP BY ALL
+   )
+   SELECT month, carrier, round(delay,  2) AS delay
+   FROM monthly
+   QUALIFY rank() OVER (PARTITION BY  month ORDER BY delay DESC) = 1
+   ORDER BY month;
+   ```
 
 2. What fraction of each carrier's flights departed more than 30 minutes late, and how does that compare to the fraction over all flights? Use a CTE.
 
-```{duckdb}
-#| session: flights
-
-```
+   ```{duckdb}
+   #| session: flights
+   WITH overall AS (
+     SELECT avg(CASE WHEN dep_delay >  30 THEN 1 ELSE 0 END) as  overall_late
+     FROM flights
+   )
+   SELECT carrier,
+     round(avg(CASE WHEN dep_delay > 30  THEN 1 ELSE 0 END), 3) AS late,
+     round(overall_late, 3)as  overall_late
+     FROM flights CROSS JOIN overall
+   GROUP BY carrier, overall_late
+   ORDER BY late DESC;
+   ```
