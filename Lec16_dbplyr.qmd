@@ -1,0 +1,55 @@
+---
+title: "Lecture 16 - Exercise solutions"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+engine: knitr
+---
+
+```{r setup}
+#| include: false
+library(dplyr)
+con = DBI::dbConnect(duckdb::duckdb())
+flights_tbl = copy_to(con, nycflights13::flights, "flights", temporary = FALSE)
+planes_tbl = copy_to(con, nycflights13::planes, "planes", temporary = FALSE)
+```
+
+
+# Exercise 1
+
+Using `flights_tbl` and `planes_tbl`, find the most common destination from each origin, the five manufacturers with the most flights along with their mean departure delay, and the manufacturers with at least 30,000 flights. Inspect the SQL for each with `show_query()`.
+
+```{r}
+q1 = flights_tbl |>
+  count(origin, dest) |>
+  filter(n == max(n, na.rm = TRUE), .by = origin) |>
+  arrange(origin)
+
+q1
+show_query(q1)
+```
+
+```{r}
+q2 = flights_tbl |>
+  inner_join(planes_tbl, by = "tailnum") |>
+  summarize(n = n(), delay = mean(dep_delay, na.rm = TRUE), .by = manufacturer) |>
+  arrange(desc(n)) |>
+  head(5)
+
+q2
+show_query(q2)
+```
+
+```{r}
+q3 = flights_tbl |>
+  inner_join(planes_tbl, by = "tailnum") |>
+  summarize(n = n(), delay = mean(dep_delay, na.rm = TRUE), .by = manufacturer) |>
+  filter(n >= 30000) |>
+  arrange(desc(n))
+
+q3
+show_query(q3)
+```

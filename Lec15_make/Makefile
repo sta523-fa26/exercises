@@ -1,8 +1,6 @@
 PY := uv run python
 R  := Rscript
 
-all: report.html
-
 report.html: report.qmd data/clean.csv figs/scores.png figs/counts.png
 	quarto render report.qmd
 
