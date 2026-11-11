@@ -58,10 +58,10 @@ server = function(input, output, session) {
     d() |>
       group_by(distribution) |>
       summarize(
-        mean = sum(p*density) / sum(density),
-        median = p[(cumsum(density) / sum(density) >= 0.5)][1],
-        q025 = p[(cumsum(density) / sum(density) >= 0.025)][1],
-        q975 = p[(cumsum(density) / sum(density) >= 0.975)][1]
+        mean = sum(p*density) / n(),
+        median = p[(cumsum(density/n()) >= 0.5)][1],
+        q025 = p[(cumsum(density/n()) >= 0.025)][1],
+        q975 = p[(cumsum(density/n()) >= 0.975)][1]
       )
   })
 }
