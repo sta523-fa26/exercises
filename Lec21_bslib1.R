@@ -2,18 +2,9 @@ library(tidyverse)
 library(shiny)
 library(bslib)
 
-# dist_themes = c(prior = "danger", likelihood = "success", posterior = "primary")
-# 
-# stat_icons = c(
-#   Mean = "bullseye",
-#   Median = "symmetry-vertical",
-#   `95% CI` = "distribute-horizontal"
-# )
-# 
-# class = "d-flex justify-content-between align-items-center"
-
 
 ui = page_sidebar(
+  #theme = bs_theme(preset = "brite"),
   title = "Beta-Binomial Visualizer",
   sidebar = sidebar(
     h4("Data:"),
@@ -21,17 +12,42 @@ ui = page_sidebar(
     sliderInput("n", "# of flips", min=0, max=100, value=10),
     h4("Prior:"),
     numericInput("a", "Prior # of head", min=0, value=5),
-    numericInput("b", "Prior # of tails", min=0, value=5)
+    numericInput("b", "Prior # of tails", min=0, value=5),
+    actionButton("go", "Go")
   ),
-  plotOutput("plot"),
-  tableOutput("table")
+  card(
+    card_header("Distributions"),
+    card_body(
+      plotOutput("plot")
+    ),
+    full_screen = TRUE
+  ),
+  card(
+    card_header(
+      textOutput("summary_title"),
+      popover(
+        bsicons::bs_icon("gear"),
+        title = "Settings",
+        selectInput(
+          "summary_dist", "Distributions:",
+          choices = c("prior", "likelihood", "posterior")
+        )
+      ),
+      class = "d-flex justify-content-between align-items-center"
+    ),
+    card_body(
+      uiOutput("value_boxes")
+    )
+  )
 )
 
 
 server = function(input, output, session) {
+  bs_themer()
+  
   observe({
     updateSliderInput(session, "x", max = input$n)
-  })
+  }) 
 
   d = reactive({
     tibble(
@@ -51,7 +67,11 @@ server = function(input, output, session) {
     mutate(
       distribution = forcats::as_factor(distribution)
     )
-  })
+  }) |>
+    bindEvent(
+      input$go,
+      ignoreNULL = FALSE
+    )
 
   output$plot = renderPlot({
     ggplot(
@@ -62,8 +82,26 @@ server = function(input, output, session) {
       geom_ribbon(aes(ymax=density, fill=distribution), ymin=0, alpha=0.5)
   })
 
-  output$table = renderTable({
-    d() |>
+  output$value_boxes = renderUI({
+    #print( d() |> pull(distribution) )
+    
+    stat_icons = list(
+      Mean = bsicons::bs_icon("bullseye"),
+      Median = bsicons::bs_icon("symmetry-vertical"),
+      `95% CI` = bsicons::bs_icon("distribute-horizontal")
+    )
+
+    dist_colors = c(
+      prior = "danger",
+      likelihood = "success",
+      posterior = "primary"
+    )
+
+
+    stats = d() |>
+      filter(
+        distribution %in% input$summary_dist
+      ) |>
       summarize(
         Mean = (sum(p * density) / sum(density)) |> format(nsmall = 3, digits=3),
         Median = p[(cumsum(density) / sum(density) >= 0.5)][1] |> format(nsmall = 3, digits=3),
@@ -72,9 +110,24 @@ server = function(input, output, session) {
           p[(cumsum(density) / sum(density) >= 0.975)][1]
         ) |>
           format(nsmall = 3, digits=3) |>
-          paste(collapse = " - "),
-        .by = distribution
+          paste(collapse = " - ")
       )
+    
+    boxes = imap(
+      stats,
+      ~ value_box(
+        title = .y,
+        value = .x,
+        showcase = stat_icons[[.y]],
+        theme = dist_colors[input$summary_dist]
+      )
+    ) |>
+      unname()
+    layout_column_wrap(!!!boxes, width="200px")
+  })
+
+  output$summary_title = renderText({
+    input$summary_dist |> stringr::str_to_title()
   })
 }
 
