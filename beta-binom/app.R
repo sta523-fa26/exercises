@@ -43,7 +43,7 @@ ui = page_sidebar(
 
 
 server = function(input, output, session) {
-  bs_themer()
+  #bs_themer()
   
   observe({
     updateSliderInput(session, "x", max = input$n)
