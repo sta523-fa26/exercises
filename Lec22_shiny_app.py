@@ -1,7 +1,9 @@
 from shiny import App, reactive, render, ui
 
 app_ui = ui.page_sidebar(
-    ui.sidebar(),
+    ui.sidebar(
+        "Hello"
+    ),
     title="Beta-Binomial Visualizer",
 )
 
