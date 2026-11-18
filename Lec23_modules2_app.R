@@ -46,12 +46,12 @@ ui = page_fillable(
     div(
       class = "controls overflow-auto px-1 pb-1",
       card(
-        card_header("Data", class = "text-bg-secondary"),
+        card_header("Data", class = "text-bg-primary"),
         sliderInput("x", "# of heads", min = 0, max = 100, value = 7),
         sliderInput("n", "# of flips", min = 0, max = 100, value = 10)
       ),
       card(
-        card_header("Priors", class = "text-bg-secondary"),
+        card_header("Priors", class = "text-bg-primary"),
         div(id = "priors"),
         card_footer(
           actionButton(
@@ -62,7 +62,7 @@ ui = page_fillable(
       )
     ),
     card(
-      card_header("Distributions", class = "text-bg-secondary"),
+      card_header("Distributions", class = "text-bg-primary"),
       plotOutput("plot")
     )
   )

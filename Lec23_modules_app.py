@@ -60,12 +60,12 @@ app_ui = ui.page_fillable(
     ui.layout_columns(
         ui.div(
             ui.card(
-                ui.card_header("Data", class_="text-bg-secondary"),
+                ui.card_header("Data", class_="text-bg-primary"),
                 ui.input_slider("x", "# of heads", min=0, max=100, value=7),
                 ui.input_slider("n", "# of flips", min=0, max=100, value=10),
             ),
             ui.card(
-                ui.card_header("Priors", class_="text-bg-secondary"),
+                ui.card_header("Priors", class_="text-bg-primary"),
                 ui.div(id="priors"),
                 ui.card_footer(
                     ui.input_action_button(
@@ -76,7 +76,7 @@ app_ui = ui.page_fillable(
             class_="controls overflow-auto px-1 pb-1",
         ),
         ui.card(
-            ui.card_header("Distributions", class_="text-bg-secondary"),
+            ui.card_header("Distributions", class_="text-bg-primary"),
             ui.output_plot("plot"),
         ),
         col_widths=(3, 9),
