@@ -2,6 +2,7 @@ library(tidyverse)
 library(shiny)
 library(bslib)
 
+
 n_sim = 501
 
 beta_binom = function(label, a, b, x, n) {
@@ -70,6 +71,7 @@ server = function(input, output, session) {
     bindEvent(input$n)
 
   output$priors = renderUI({
+    set.seed(1234) # Only a partial fix
     map(seq_len(input$add), prior_inputs)
   })
 
